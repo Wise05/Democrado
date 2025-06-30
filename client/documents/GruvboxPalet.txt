@@ -17,4 +17,4 @@ blue: teal-600
 aqua: green-600
 orange: orange-600
 gray: stone-400
-white: amber-100
+white: amber-101

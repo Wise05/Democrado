@@ -1,0 +1,7 @@
+This document is for getting my thoughts together
+
+Stack:
+React, tailwind, Tone.js, React context, Local Storage, Supabase
+
+Composer should be similar to BeepBox
+

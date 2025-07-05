@@ -12,14 +12,13 @@ import profile from "../../assets/images/profile.png"
 
 function Home() {
   return (
-    <div className="bg-neutral-800 text-amber-100 h-full p-6 font-mono relative">
+    <div className="bg-neutral-800 text-amber-100 h-min-screen p-6 font-mono">
       <div className="flex gap-4">
         <div>
-          <h1 className="text-7xl font-pixel font-normal text-orange-400">Democrado</h1>
-          <div className="bg-green-600 h-2 w-150 mu-3 mb-5"></div>
+          <h1 className="text-7xl font-pixel font-normal text-orange-400">ChipVote</h1>
+          <div className="bg-green-400 h-2 w-150 mu-3 mb-5"></div>
           <div className="border-amber-100 border-1 p-3 h-18.5">
-            <Typewriter text="Welcome to Democrado, the game where the winner is decided by democracy, but improvization is king.
-" />
+            <Typewriter text="Welcome to ChipVote! If you are new start with the tutorial or visit the about page." />
           </div>
         </div>
         <div className="border-amber-100 border-1 w-full h-43.5">
@@ -47,7 +46,7 @@ function Home() {
           </div>
         </Link>
         <Link
-          to="/"
+          to="/composer"
           className="border-amber-100 border-1 w-120 h-50 overflow-hidden"
         >
           <div className="w-full h-full font-pixel text-3xl flex justify-center items-center no-underline transition delay-100 duration-200 ease-in hover:bg-orange-400 hover:scale-110  relative group">

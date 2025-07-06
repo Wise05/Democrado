@@ -5,3 +5,4 @@ React, tailwind, Tone.js, React context, Local Storage, Supabase
 
 Composer should be similar to BeepBox
 
+Issue: How to best display different sized notes in the graph 

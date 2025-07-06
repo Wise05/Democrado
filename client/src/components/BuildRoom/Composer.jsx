@@ -4,7 +4,7 @@ import { useState } from "react";
 
 function Composer() {
   // notes that can be played in the editor
-  const notes = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"];
+  const notes = ["C5", "B#4", "B4", "A#4", "A4", "G4", "F#4", "F4", "E4", "D#4", "D4", "C#4", "C4"]
   // number of steps in page. 64 means 4 bars with 16 steps (16th notes)
   let numSteps = 64;
 
@@ -76,26 +76,34 @@ function Composer() {
 
   return (
     <div className="bg-neutral-800 text-amber-100 h-min-screen p-6 font-mono">
-      <div>
-        {grid.map((row, rowIndex) => (
-          <div key={rowIndex} className="flex m-0">
-            {row.map((cell, colIndex) => (
-              <div
-                key={colIndex}
-                onClick={() => {
-                  grid[rowIndex][colIndex] == null ?
-                    addNote(rowIndex, colIndex) : removeNote(rowIndex, colIndex)
-                }}
-                className={`
-            w-6 h-3 border border-black m-0 cursor-pointer 
-            hover:bg-black ${cell ? "bg-blue-500" : "bg-white"}
+      <div className="flex">
+        {/* Grid note lables  */}
+        <div>
+          {notes.map((note, index) => (
+            <div key={index} className="text-[0.5rem] w-5 h-3 my-0.25">{note[1] === "#" ? "" : note}</div>
+          ))}
+        </div>
+        {/* Grid */}
+        <div>
+          {grid.map((row, rowIndex) => (
+            <div key={rowIndex} className="flex my-0.25">
+              {row.map((cell, colIndex) => (
+                <div
+                  key={colIndex}
+                  onClick={() => {
+                    grid[rowIndex][colIndex] == null ?
+                      addNote(rowIndex, colIndex) : removeNote(rowIndex, colIndex)
+                  }}
+                  className={`
+            w-3 h-3 m-0 cursor-pointer hover:bg-black ${cell ? "bg-blue-500" : "bg-white"}
+            border border-white hover:border-blue-500 ${((colIndex) % 4 == 0) ? "border-l-black" : ""}
           `}
-              />
-            ))}
-          </div>
-        ))}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
-      {console.log(grid)}
     </div>
   )
 }

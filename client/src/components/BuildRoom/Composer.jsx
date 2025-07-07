@@ -26,13 +26,24 @@ function Composer() {
   const lengthToCells = (length = noteLength) => {
     let num = length.match(/\d+/);
     const map = {
-      "16": "1",
-      "8": "2",
-      "4": "4",
-      "2": "8",
-      "1": "16"
+      "16": 1,
+      "8": 2,
+      "4": 4,
+      "2": 8,
+      "1": 16
     }
     return map[num];
+  }
+
+  const cellsToLength = (cells) => {
+    const map = {
+      1: "16n",
+      2: "8n",
+      4: "4n",
+      8: "2n",
+      16: "1n",
+    }
+    return map[cells];
   }
 
   // add note to grid
@@ -43,15 +54,19 @@ function Composer() {
       const newGrid = prev.map((r) => [...r]);
 
       // clear notes that would overlap
-      for (let i = 0; i < numCells; i++) {
+      for (let i = 0; i < numCells && i + col < numSteps; i++) {
         if (col + i < numSteps && prev[row][col + i] != null) {
-          for (let j = 0; j < prev[row][col + i]; j++) {
-            prev[row][col + i + j] = null;
+          let len = lengthToCells(prev[row][col + i]);
+          for (let j = 0; j < len; j++) {
+            newGrid[row][col + i + j] = null;
           }
         }
       }
 
-      newGrid[row][col] = noteLength;
+      let ajusted = noteLength;
+      if (col + numCells > numSteps)
+        ajusted = cellsToLength(numSteps - col);
+      newGrid[row][col] = ajusted;
 
       return newGrid;
     });
@@ -62,13 +77,7 @@ function Composer() {
     setGrid(prev => {
       const newGrid = prev.map((r) => [...r]);
 
-      while (prev[row][col].first == false) {
-        col--;
-      }
-
-      for (let i = 0; i < prev[row][col].length; i++) {
-        newGrid[row][col + i] = null;
-      }
+      newGrid[row][col] = null;
 
       return newGrid;
     });
@@ -79,15 +88,15 @@ function Composer() {
     const measureGapSize = 0.75;
     const noteGapSize = 0.30;
     const base = lengthToCells(size);
-    const endCol = parseInt(startCol) + parseInt(base);
+    const endCol = startCol + base;
     let measureGaps = 0;
     let noteGaps = 0;
-    let scale = parseInt(base);
+    let scale = base;
 
     if (base == 1) return 1;
 
     // Count gaps that the note will cross over (not including the starting position)
-    for (let i = parseInt(startCol) + 1; i <= endCol; i++) {
+    for (let i = startCol + 1; i <= endCol; i++) {
       if (i % 16 == 0) {
         measureGaps += 1;
       }
@@ -97,7 +106,6 @@ function Composer() {
     }
 
     scale += (measureGaps * measureGapSize) + (noteGaps * noteGapSize);
-    console.log(scale);
     return scale;
   }
 
@@ -122,7 +130,7 @@ function Composer() {
                     ${((colIndex % 16) == 0) ? "ml-1" : ""}
                   `}>
                   <div
-                    onClick={() => {
+                    onMouseDown={() => {
                       grid[rowIndex][colIndex] == null ?
                         addNote(rowIndex, colIndex) : removeNote(rowIndex, colIndex)
                     }}

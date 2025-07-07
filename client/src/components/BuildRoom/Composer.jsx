@@ -1,10 +1,11 @@
 import * as Tone from "tone";
 import { useState } from "react";
+import Options from "./Options"
 // Make sure to add await Tone.start();
 
 function Composer() {
   // notes that can be played in the editor
-  const notes = ["C5", "B#4", "B4", "A#4", "A4", "G4", "F#4", "F4", "E4", "D#4", "D4", "C#4", "C4"]
+  const notes = ["C6", "B#5", "B5", "A#5", "A5", "G5", "F#5", "F5", "E5", "D#5", "D5", "C#5", "C5", "B#4", "B4", "A#4", "A4", "G4", "F#4", "F4", "E4", "D#4", "D4", "C#4", "C4"]
   // number of steps in page. 64 means 4 bars with 16 steps (16th notes)
   let numSteps = 64;
 
@@ -18,10 +19,12 @@ function Composer() {
     )
   );
 
+  const [noteLength, setNoteLength] = useState("16n");
+
   // converts tone.js notation to number of cells in grid
   // e.g. 16n = 1 cell, 2n = 8 cells
-  const lengthToCells = (noteLength) => {
-    let num = noteLength.match(/\d+/);
+  const lengthToCells = (length = noteLength) => {
+    let num = length.match(/\d+/);
     const map = {
       "16": "1",
       "8": "2",
@@ -33,14 +36,14 @@ function Composer() {
   }
 
   // add note to grid
-  const addNote = (row, col, noteLength = "16n") => {
-    noteLength = lengthToCells(noteLength);
+  const addNote = (row, col) => {
+    let numCells = lengthToCells(noteLength);
 
     setGrid(prev => {
       const newGrid = prev.map((r) => [...r]);
 
       // clear notes that would overlap
-      for (let i = 0; i < noteLength; i++) {
+      for (let i = 0; i < numCells; i++) {
         if (col + i < numSteps && prev[row][col + i] != null) {
           for (let j = 0; j < prev[row][col + i]; j++) {
             prev[row][col + i + j] = null;
@@ -48,10 +51,7 @@ function Composer() {
         }
       }
 
-      newGrid[row][col] = { length: noteLength, first: true };
-      for (let i = 1; i < noteLength; i++) {
-        newGrid[row][col + i] = { length: noteLength, first: false };
-      }
+      newGrid[row][col] = noteLength;
 
       return newGrid;
     });
@@ -74,37 +74,73 @@ function Composer() {
     });
   }
 
+  //add .25 for measures, add .125 for notes
+  const calcScaleValue = (startCol, size) => {
+    const measureGapSize = 0.75;
+    const noteGapSize = 0.30;
+    const base = lengthToCells(size);
+    const endCol = parseInt(startCol) + parseInt(base);
+    let measureGaps = 0;
+    let noteGaps = 0;
+    let scale = parseInt(base);
+
+    if (base == 1) return 1;
+
+    // Count gaps that the note will cross over (not including the starting position)
+    for (let i = parseInt(startCol) + 1; i <= endCol; i++) {
+      if (i % 16 == 0) {
+        measureGaps += 1;
+      }
+      else if (i % 4 == 0) {
+        noteGaps += 1;
+      }
+    }
+
+    scale += (measureGaps * measureGapSize) + (noteGaps * noteGapSize);
+    console.log(scale);
+    return scale;
+  }
+
   return (
     <div className="bg-neutral-800 text-amber-100 h-min-screen p-6 font-mono">
-      <div className="flex">
+      <div className="flex justify-center">
         {/* Grid note lables  */}
         <div>
           {notes.map((note, index) => (
-            <div key={index} className="text-[0.5rem] w-5 h-3 my-0.25">{note[1] === "#" ? "" : note}</div>
+            <div key={index} className="text-[0.75rem] w-4 h-4 my-0.5 font-bold">{note[1] === "#" ? "" : note}</div>
           ))}
         </div>
         {/* Grid */}
         <div>
           {grid.map((row, rowIndex) => (
-            <div key={rowIndex} className="flex my-0.25">
+            <div key={rowIndex} className="flex my-0.5">
               {row.map((cell, colIndex) => (
                 <div
                   key={colIndex}
-                  onClick={() => {
-                    grid[rowIndex][colIndex] == null ?
-                      addNote(rowIndex, colIndex) : removeNote(rowIndex, colIndex)
-                  }}
-                  className={`
-            w-3 h-3 m-0 cursor-pointer hover:bg-black ${cell ? "bg-blue-500" : "bg-white"}
-            border border-white hover:border-blue-500 ${((colIndex) % 4 == 0) ? "border-l-black" : ""}
+                  className={`relative w-4 h-4 border-l-1 border-l-neutral-800
+                    ${((colIndex) % 4 == 0) ? "ml-0.5" : ""}
+                    ${((colIndex % 16) == 0) ? "ml-1" : ""}
+                  `}>
+                  <div
+                    onClick={() => {
+                      grid[rowIndex][colIndex] == null ?
+                        addNote(rowIndex, colIndex) : removeNote(rowIndex, colIndex)
+                    }}
+                    className={`
+            absolute left-0 w-full h-full cursor-pointer hover:border-3 hover:border-green-600 hover:z-2
+            ${cell ? `origin-left z-3` : ""}
+            ${cell ? "bg-amber-100" : "bg-neutral-700"}
           `}
-                />
+                    style={cell ? { transform: `scaleX(${calcScaleValue(colIndex, cell)})` } : {}}
+                  />
+                </div>
               ))}
             </div>
           ))}
         </div>
+        <Options noteLength={noteLength} setNoteLength={setNoteLength} />
       </div>
-    </div>
+    </div >
   )
 }
 

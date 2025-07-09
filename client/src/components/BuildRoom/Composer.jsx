@@ -60,17 +60,17 @@ function Composer() {
       // clear notes that would overlap
       for (let i = 0; i < numCells && i + col < numSteps; i++) {
         if (col + i < numSteps && prev[row][col + i] != null) {
-          let len = lengthToCells(prev[row][col + i]);
+          let len = prev[row][col + i].length;
           for (let j = 0; j < len; j++) {
             newGrid[row][col + i + j] = null;
           }
         }
       }
 
-      let ajusted = noteLength;
+      let ajusted = numCells;
       if (col + numCells > numSteps)
-        ajusted = cellsToLength(numSteps - col);
-      newGrid[row][col] = ajusted;
+        ajusted = numSteps - col;
+      newGrid[row][col] = { note: notes[row], length: ajusted };
 
       return newGrid;
     });
@@ -91,15 +91,14 @@ function Composer() {
   const calcScaleValue = (startCol, size) => {
     let measureGapSize = 0.6;
     let noteGapSize = 0.3;
-    const base = lengthToCells(size);
-    const endCol = startCol + base;
+    const endCol = startCol + size;
     let measureGaps = 0;
     let noteGaps = 0;
-    let scale = base;
+    let scale = size;
 
-    if (base == 1) return 1;
+    if (size == 1) return 1;
 
-    if (startCol % 4 == 0 && (base == 16 || base == 8)) noteGapSize = 0.45;
+    if (startCol % 4 == 0 && (size == 16 || size == 8)) noteGapSize = 0.45;
 
     // Count gaps that the note will cross over (not including the starting position)
     for (let i = startCol + 1; i < endCol; i++) {
@@ -149,7 +148,7 @@ function Composer() {
             ${cell ? `origin-left z-3` : ""}
             ${cell ? "bg-amber-100" : "bg-neutral-700"}
           `}
-                    style={cell ? { transform: `scaleX(${calcScaleValue(colIndex, cell)})` } : {}}
+                    style={cell ? { transform: `scaleX(${calcScaleValue(colIndex, cell.length)})` } : {}}
                   />
                 </div>
               ))}

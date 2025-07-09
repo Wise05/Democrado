@@ -1,11 +1,12 @@
 import * as Tone from "tone";
 import { useState } from "react";
 import Options from "./Options"
+import { Link } from "react-router-dom";
 // Make sure to add await Tone.start();
 
 function Composer() {
   // notes that can be played in the editor
-  const notes = ["C6", "B#5", "B5", "A#5", "A5", "G5", "F#5", "F5", "E5", "D#5", "D5", "C#5", "C5", "B#4", "B4", "A#4", "A4", "G4", "F#4", "F4", "E4", "D#4", "D4", "C#4", "C4"]
+  const notes = ["C6", "B5", "A#5", "A5", "G#5", "G5", "F#5", "F5", "E5", "D#5", "D5", "C#5", "C5", "B4", "A#4", "A4", "G#4", "G4", "F#4", "F4", "E4", "D#4", "D4", "C#4", "C4"]
   // number of steps in page. 64 means 4 bars with 16 steps (16th notes)
   let numSteps = 64;
 
@@ -19,7 +20,7 @@ function Composer() {
     )
   );
 
-  const [noteLength, setNoteLength] = useState("16n");
+  const [noteLength, setNoteLength] = useState("8n");
 
   // converts tone.js notation to number of cells in grid
   // e.g. 16n = 1 cell, 2n = 8 cells
@@ -46,9 +47,12 @@ function Composer() {
     return map[cells];
   }
 
+  const synth = new Tone.Synth().toDestination();
   // add note to grid
   const addNote = (row, col) => {
     let numCells = lengthToCells(noteLength);
+
+    synth.triggerAttackRelease(notes[row], "8n");
 
     setGrid(prev => {
       const newGrid = prev.map((r) => [...r]);
@@ -85,8 +89,8 @@ function Composer() {
 
   //add .25 for measures, add .125 for notes
   const calcScaleValue = (startCol, size) => {
-    const measureGapSize = 0.75;
-    const noteGapSize = 0.30;
+    let measureGapSize = 0.6;
+    let noteGapSize = 0.3;
     const base = lengthToCells(size);
     const endCol = startCol + base;
     let measureGaps = 0;
@@ -95,8 +99,10 @@ function Composer() {
 
     if (base == 1) return 1;
 
+    if (startCol % 4 == 0 && (base == 16 || base == 8)) noteGapSize = 0.45;
+
     // Count gaps that the note will cross over (not including the starting position)
-    for (let i = startCol + 1; i <= endCol; i++) {
+    for (let i = startCol + 1; i < endCol; i++) {
       if (i % 16 == 0) {
         measureGaps += 1;
       }
@@ -110,8 +116,12 @@ function Composer() {
   }
 
   return (
-    <div className="bg-neutral-800 text-amber-100 h-min-screen p-6 font-mono">
-      <div className="flex justify-center">
+    <div className="relative bg-neutral-800 text-amber-100 min-h-screen px-6 font-mono">
+      <div>
+        <h1 className="text-center text-3xl font-pixel text-orange-400">ChipVote Sandbox</h1>
+      </div>
+      <Link to="/" className="absolute top-1 left-6 font-pixel border border-amber-100 px-2">Home</Link>
+      <div className="flex justify-center border border-amber-100 py-2">
         {/* Grid note lables  */}
         <div>
           {notes.map((note, index) => (
@@ -146,7 +156,7 @@ function Composer() {
             </div>
           ))}
         </div>
-        <Options noteLength={noteLength} setNoteLength={setNoteLength} />
+        <Options noteLength={noteLength} setNoteLength={setNoteLength} grid={grid} />
       </div>
     </div >
   )

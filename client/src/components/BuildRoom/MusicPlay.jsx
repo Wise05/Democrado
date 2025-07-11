@@ -1,6 +1,7 @@
 import * as Tone from "tone";
 import { useState, useEffect, useRef } from "react";
 
+// Holds the music play button and music playback logic
 function MusicPlay({ grid }) {
   const lengthMap = {
     1: "16n",
@@ -24,7 +25,7 @@ function MusicPlay({ grid }) {
     const synth = new Tone.PolySynth(Tone.Synth).toDestination();
     synthRef.current = synth;
 
-    Tone.Transport.bpm.value = 120;
+    Tone.Transport.bpm.value = 120; // TODO: change later
 
     let currentStep = 0;
 

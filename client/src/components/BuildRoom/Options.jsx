@@ -1,6 +1,7 @@
 import { useState } from "react";
 import PlayButton from "./MusicPlay";
 
+// Composer options for all things
 function Options({ grid, noteLength, setNoteLength }) {
   const noteLengths = { "whole note": "1n", "half note": "2n", "quarter note": "4n", "eigth note": "8n", "sixteenth note": "16n" };
 
@@ -9,6 +10,8 @@ function Options({ grid, noteLength, setNoteLength }) {
   return (
     <div className="ml-2">
       <div className="flex gap-1">
+
+        {/* play */}
         <PlayButton grid={grid} />
         <button className="px-2 border border-amber-100">
           {/* prev */}
@@ -23,6 +26,10 @@ function Options({ grid, noteLength, setNoteLength }) {
           </svg>
         </button>
       </div>
+
+      {/* Volume */}
+      <div className="relative border border-amber-100 w-50 my-1 px-2">Volume:</div>
+
       {/* note length */}
       <div className="relative border border-amber-100 w-50 my-1 px-2">
         <button onClick={() => { openDropdown == null ? setOpenDropdown("noteLength") : setOpenDropdown(null) }}
@@ -51,6 +58,18 @@ ${(openDropdown === "noteLength" ? "visible" : "invisible")}`}>
           ))}
         </div>
       </div>
+
+      {/* Note effects */}
+      <div className="relative border border-amber-100 w-50 my-1 px-2">Note Effects</div>
+
+      {/* Key */}
+      <div className="relative border border-amber-100 w-50 my-1 px-2">Key:</div>
+
+      {/* Tempo */}
+      <div className="relative border border-amber-100 w-50 my-1 px-2">Tempo:</div>
+
+
+      <div className="relative border border-amber-100 w-50 my-1 px-2">Instrument:</div>
     </div>
   )
 }

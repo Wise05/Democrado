@@ -1,17 +1,26 @@
 import { useState } from "react";
 import Options from "./Options";
 import Grid from "./Grid";
+import TrackControl from "./TrackControl";
 import { Link } from "react-router-dom";
 // Make sure to add await Tone.start();
 
 function Composer() {
+  // number of tracks for 4 instruments total
   const numTracks = 4;
-  // No more than 16
+
+  // Number of grids that make up one track
+  // Should be capped at like 16 prob
   const [numSegments, setNumSegments] = useState(4);
-  // number of steps in page. 64 means 4 bars with 16 steps (16th notes)
+
+  // number of steps in grid. 64 means 4 bars with 16 steps (16th notes)
   const [numSteps, setNumSteps] = useState(64);
+
   // notes that can be played in the editor
+  // changes with instrument selected
   const [notes, setNotes] = useState(["C6", "B5", "A#5", "A5", "G#5", "G5", "F#5", "F5", "E5", "D#5", "D5", "C#5", "C5", "B4", "A#4", "A4", "G#4", "G4", "F#4", "F4", "E4", "D#4", "D4", "C#4", "C4"]);
+
+  const colorMap = ["text-yellow-400", "text-green-600", "text-purple-600", "text-red-600"];
 
   // Houses the entire song with all tracks
   // TODO: resizing from changing numSegments and time signature
@@ -28,8 +37,9 @@ function Composer() {
   // the current grid being shown to the user
   // Track is one of the four instruments
   // Segment is one of the grids
-  const [trackSegment, setGridDim] = useState({ track: 0, segment: 0 });
+  const [trackSegment, setTrackSegment] = useState({ track: 0, segment: 0 });
 
+  // Takes one grid and applies it to the whole song structure
   const setGrid = (newGrid) => {
     setSong(prev => {
       const newSong = [...prev];
@@ -40,6 +50,8 @@ function Composer() {
     })
   }
 
+  // Length of note that will be placed when clicked
+  // Uses tone.js notation
   const [noteLength, setNoteLength] = useState("8n");
 
   return (
@@ -57,6 +69,10 @@ function Composer() {
 
         {/* Options */}
         <Options noteLength={noteLength} setNoteLength={setNoteLength} grid={song[trackSegment.track][trackSegment.segment]} />
+      </div>
+      {/* Track control */}
+      <div>
+        <TrackControl song={song} numTracks={numTracks} numSegments={numSegments} colorMap={colorMap} />
       </div>
     </div >
   )

@@ -1,6 +1,6 @@
 import * as Tone from "tone";
 
-function Grid({ grid, setGrid, numSteps, notes, noteLength }) {
+function Grid({ grid, setGrid, numSteps, notes, noteLength, trackSegment }) {
   // converts tone.js notation to number of cells in grid
   // e.g. 16n = 1 cell, 2n = 8 cells
   const lengthToCells = (length = noteLength) => {
@@ -15,17 +15,7 @@ function Grid({ grid, setGrid, numSteps, notes, noteLength }) {
     return map[num];
   }
 
-  // converts num of cells to tone.js notation
-  const cellsToLength = (cells) => {
-    const map = {
-      1: "16n",
-      2: "8n",
-      4: "4n",
-      8: "2n",
-      16: "1n",
-    }
-    return map[cells];
-  }
+  const colorMap = ["bg-teal-500", "bg-green-600", "bg-purple-600", "bg-orange-600"];
 
   const synth = new Tone.Synth().toDestination();
 
@@ -122,7 +112,7 @@ function Grid({ grid, setGrid, numSteps, notes, noteLength }) {
                   className={`
             absolute left-0 w-full h-full cursor-pointer hover:border-3 hover:border-green-600 hover:z-2
             ${cell ? `origin-left z-3` : ""}
-            ${cell ? "bg-amber-100" : "bg-neutral-700"}
+            ${cell ? colorMap[trackSegment["track"]] : "bg-neutral-700"}
           `}
                   style={cell ? { transform: `scaleX(${calcScaleValue(colIndex, cell.length)})` } : {}}
                 />

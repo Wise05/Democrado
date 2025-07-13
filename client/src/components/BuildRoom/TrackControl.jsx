@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-function TrackControl({ song, numTracks, numSegments, colorMap }) {
+function TrackControl({ song, numTracks, numSegments, colorMap, trackSegment, setTrackSegment }) {
   const maxNumSegments = 16;
 
   // Represents each grid with a number 
@@ -23,17 +23,23 @@ function TrackControl({ song, numTracks, numSegments, colorMap }) {
     );
   }, [numSegments]);
 
+  const handleSwitchSegment = (track, segment) => {
+    setTrackSegment({ "track": track, "segment": segment })
+  }
 
   return (
     <div className="px-2 py-1 mt-3 border border-amber-100">
       {segmentStates.map((track, trackIndex) => (
         <div key={trackIndex} className="flex my-0.5 gap-0.5 font-pixel">
           {track.map((segment, segmentIndex) =>
-            <div
-              className={`w-7 h-7 bg-neutral-700 flex justify-center items-center
+            <button
+              onClick={() => { handleSwitchSegment(trackIndex, segmentIndex) }}
+              className={`w-7 h-7 flex justify-center items-center
                 ${colorMap[trackIndex]}
+                ${(trackSegment["track"] == trackIndex && trackSegment["segment"] == segmentIndex) ?
+                  "bg-neutral-600" : "bg-neutral-700"}
               `}
-              key={segmentIndex}>{segment}</div>)}
+              key={segmentIndex}>{segment}</button>)}
         </div>
       ))
       }

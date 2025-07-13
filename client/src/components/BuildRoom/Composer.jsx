@@ -20,7 +20,7 @@ function Composer() {
   // changes with instrument selected
   const [notes, setNotes] = useState(["C6", "B5", "A#5", "A5", "G#5", "G5", "F#5", "F5", "E5", "D#5", "D5", "C#5", "C5", "B4", "A#4", "A4", "G#4", "G4", "F#4", "F4", "E4", "D#4", "D4", "C#4", "C4"]);
 
-  const colorMap = ["text-yellow-400", "text-green-600", "text-purple-600", "text-red-600"];
+  const colorMap = ["text-teal-500", "text-green-600", "text-purple-600", "text-orange-600"];
 
   // Houses the entire song with all tracks
   // TODO: resizing from changing numSegments and time signature
@@ -37,7 +37,7 @@ function Composer() {
   // the current grid being shown to the user
   // Track is one of the four instruments
   // Segment is one of the grids
-  const [trackSegment, setTrackSegment] = useState({ track: 0, segment: 0 });
+  const [trackSegment, setTrackSegment] = useState({ "track": 0, "segment": 0 });
 
   // Takes one grid and applies it to the whole song structure
   const setGrid = (newGrid) => {
@@ -65,14 +65,14 @@ function Composer() {
       <div className="flex justify-center border border-amber-100 py-2">
 
         {/* grid */}
-        <Grid grid={song[trackSegment.track][trackSegment.segment]} setGrid={setGrid} numSteps={numSteps} notes={notes} noteLength={noteLength} />
+        <Grid grid={song[trackSegment.track][trackSegment.segment]} setGrid={setGrid} numSteps={numSteps} notes={notes} noteLength={noteLength} trackSegment={trackSegment} />
 
         {/* Options */}
         <Options noteLength={noteLength} setNoteLength={setNoteLength} grid={song[trackSegment.track][trackSegment.segment]} />
       </div>
       {/* Track control */}
       <div>
-        <TrackControl song={song} numTracks={numTracks} numSegments={numSegments} colorMap={colorMap} />
+        <TrackControl song={song} numTracks={numTracks} numSegments={numSegments} colorMap={colorMap} trackSegment={trackSegment} setTrackSegment={setTrackSegment} />
       </div>
     </div >
   )

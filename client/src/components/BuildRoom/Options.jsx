@@ -45,10 +45,10 @@ function Options({ grid, noteLength, setNoteLength }) {
             }
           </div>
         </button>
-        <div className={`w-full absolute left-0 top-7 border border-amber-100
+        <div className={`w-full absolute left-0 top-7 border border-amber-100 z-10 bg-neutral-800
 ${(openDropdown === "noteLength" ? "visible" : "invisible")}`}>
           {Object.keys(noteLengths).map((length) => (
-            <button
+            < button
               onClick={() => { setNoteLength(noteLengths[length]); setOpenDropdown(null) }}
               className={`w-full px-2 hover:border hover:border-amber-100 
                   ${noteLength == noteLengths[length] ? "bg-neutral-700" : ""}
@@ -70,7 +70,7 @@ ${(openDropdown === "noteLength" ? "visible" : "invisible")}`}>
 
 
       <div className="relative border border-amber-100 w-50 my-1 px-2">Instrument:</div>
-    </div>
+    </div >
   )
 }
 

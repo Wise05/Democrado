@@ -1,6 +1,6 @@
 import * as Tone from "tone";
 
-function Grid({ grid, setGrid, numSteps, notes, noteLength, trackSegment }) {
+function Grid({ grid, setGrid, numSteps, notes, noteLength, trackSegment, state }) {
   // converts tone.js notation to number of cells in grid
   // e.g. 16n = 1 cell, 2n = 8 cells
   const lengthToCells = (length = noteLength) => {
@@ -21,6 +21,9 @@ function Grid({ grid, setGrid, numSteps, notes, noteLength, trackSegment }) {
 
   // add note to grid
   const addNote = (row, col) => {
+    // make sure that the segment state is not 0
+    if (state == 0) return null
+
     let numCells = lengthToCells(noteLength);
 
     synth.triggerAttackRelease(notes[row], "8n");

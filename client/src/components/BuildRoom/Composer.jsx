@@ -13,6 +13,8 @@ function Composer() {
   // Should be capped at like 16 prob
   const [numSegments, setNumSegments] = useState(4);
 
+  const maxNumSegments = 16;
+
   // number of steps in grid. 64 means 4 bars with 16 steps (16th notes)
   const [numSteps, setNumSteps] = useState(64);
 
@@ -26,7 +28,7 @@ function Composer() {
   // TODO: resizing from changing numSegments and time signature
   const [song, setSong] = useState(() =>
     Array.from({ length: numTracks }, () =>
-      Array.from({ length: numSegments }, () =>
+      Array.from({ length: maxNumSegments }, () =>
         Array.from({ length: notes.length }, () =>
           Array(numSteps).fill(null)
         )
@@ -39,20 +41,82 @@ function Composer() {
   // Segment is one of the grids
   const [trackSegment, setTrackSegment] = useState({ "track": 0, "segment": 0 });
 
+  // Length of note that will be placed when clicked
+  // Uses tone.js notation
+  const [noteLength, setNoteLength] = useState("8n");
+
+
+  // Represents each grid with a number 
+  // Allows for user to easily repeat segments
+  const [segmentStates, setSegmentStates] = useState(() =>
+    Array.from({ length: numTracks }, () =>
+      Array(maxNumSegments).fill(0)
+    )
+  );
+
   // Takes one grid and applies it to the whole song structure
+  // Also populates to segments that are the same
   const setGrid = (newGrid) => {
     setSong(prev => {
       const newSong = [...prev];
       newSong[trackSegment.track] = [...prev[trackSegment.track]];
-      newSong[trackSegment.track][trackSegment.segment] = newGrid;
+
+      let segNum = segmentStates[trackSegment.track][trackSegment.segment];
+      for (let i = 0; i < maxNumSegments; i++) {
+        if (segmentStates[trackSegment.track][i] == segNum) {
+          newSong[trackSegment.track][i] = newGrid;
+        }
+      }
 
       return newSong;
     })
   }
 
-  // Length of note that will be placed when clicked
-  // Uses tone.js notation
-  const [noteLength, setNoteLength] = useState("8n");
+  const handleSegmentChange = (trackIndex, segmentIndex, change) => {
+    // prevent going below 0
+    if (segmentStates[trackIndex][segmentIndex] === 0 && change < 0) return;
+
+    // Step 1: update segmentStates and extract new value
+    const newSegStates = segmentStates.map(row => [...row]);
+    newSegStates[trackIndex][segmentIndex] += change;
+    const targetValue = newSegStates[trackIndex][segmentIndex];
+
+    // Step 2: look for matching segment in the updated state
+    let sameSeg = null;
+    for (let i = 0; i < numTracks; i++) {
+      for (let j = 0; j < maxNumSegments; j++) {
+        if (i === trackIndex && j === segmentIndex) continue;
+        if (newSegStates[i][j] === targetValue) {
+          sameSeg = { track: i, segment: j };
+          break;
+        }
+      }
+      if (sameSeg) break;
+    }
+
+    // Step 3: determine the new grid to use
+    let newGrid = null;
+    if (sameSeg) {
+      newGrid = song[sameSeg.track][sameSeg.segment].map(row => [...row]);
+    } else {
+      newGrid = Array.from({ length: notes.length }, () =>
+        Array(numSteps).fill(null)
+      );
+    }
+
+    // Step 4: apply to all matching segments in the same track
+    const newSong = [...song];
+    newSong[trackIndex] = [...song[trackIndex]];
+    for (let i = 0; i < maxNumSegments; i++) {
+      if (newSegStates[trackIndex][i] === targetValue) {
+        newSong[trackIndex][i] = newGrid;
+      }
+    }
+
+    // Final: set both states
+    setSegmentStates(newSegStates);
+    setSong(newSong);
+  };
 
   return (
     <div className="relative bg-neutral-800 text-amber-100 min-h-screen px-6 font-mono">
@@ -65,14 +129,14 @@ function Composer() {
       <div className="flex justify-center border border-amber-100 py-2">
 
         {/* grid */}
-        <Grid grid={song[trackSegment.track][trackSegment.segment]} setGrid={setGrid} numSteps={numSteps} notes={notes} noteLength={noteLength} trackSegment={trackSegment} />
+        <Grid grid={song[trackSegment.track][trackSegment.segment]} setGrid={setGrid} numSteps={numSteps} notes={notes} noteLength={noteLength} trackSegment={trackSegment} state={segmentStates[trackSegment.track][trackSegment.segment]} />
 
         {/* Options */}
         <Options noteLength={noteLength} setNoteLength={setNoteLength} grid={song[trackSegment.track][trackSegment.segment]} />
       </div>
       {/* Track control */}
       <div>
-        <TrackControl song={song} numTracks={numTracks} numSegments={numSegments} colorMap={colorMap} trackSegment={trackSegment} setTrackSegment={setTrackSegment} />
+        <TrackControl numSegments={numSegments} colorMap={colorMap} trackSegment={trackSegment} setTrackSegment={setTrackSegment} segmentStates={segmentStates} setSegmentStates={setSegmentStates} handleSegmentChange={handleSegmentChange} />
       </div>
     </div >
   )

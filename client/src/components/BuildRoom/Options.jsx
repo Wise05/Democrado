@@ -2,7 +2,7 @@ import { useState } from "react";
 import PlayButton from "./MusicPlay";
 
 // Composer options for all things
-function Options({ grid, noteLength, setNoteLength }) {
+function Options({ song, noteLength, setNoteLength, segmentStates }) {
   const noteLengths = { "whole note": "1n", "half note": "2n", "quarter note": "4n", "eigth note": "8n", "sixteenth note": "16n" };
 
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -12,7 +12,7 @@ function Options({ grid, noteLength, setNoteLength }) {
       <div className="flex gap-1">
 
         {/* play */}
-        <PlayButton grid={grid} />
+        <PlayButton song={song} segmentStates={segmentStates} />
         <button className="px-2 border border-amber-100">
           {/* prev */}
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">

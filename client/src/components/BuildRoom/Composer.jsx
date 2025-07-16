@@ -132,7 +132,7 @@ function Composer() {
         <Grid grid={song[trackSegment.track][trackSegment.segment]} setGrid={setGrid} numSteps={numSteps} notes={notes} noteLength={noteLength} trackSegment={trackSegment} state={segmentStates[trackSegment.track][trackSegment.segment]} />
 
         {/* Options */}
-        <Options noteLength={noteLength} setNoteLength={setNoteLength} grid={song[trackSegment.track][trackSegment.segment]} />
+        <Options noteLength={noteLength} setNoteLength={setNoteLength} song={song} segmentStates={segmentStates} />
       </div>
       {/* Track control */}
       <div>

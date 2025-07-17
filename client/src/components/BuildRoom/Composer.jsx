@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Options from "./Options";
 import Grid from "./Grid";
 import TrackControl from "./TrackControl";
 import { Link } from "react-router-dom";
+import instrumentData from "./instruments.json";
 // Make sure to add await Tone.start();
 
 function Composer() {
@@ -18,28 +19,35 @@ function Composer() {
   // number of steps in grid. 64 means 4 bars with 16 steps (16th notes)
   const [numSteps, setNumSteps] = useState(64);
 
-  // notes that can be played in the editor
-  // changes with instrument selected
-  const [notes, setNotes] = useState(["C6", "B5", "A#5", "A5", "G#5", "G5", "F#5", "F5", "E5", "D#5", "D5", "C#5", "C5", "B4", "A#4", "A4", "G#4", "G4", "F#4", "F4", "E4", "D#4", "D4", "C#4", "C4"]);
+  const [instruments, setInstruments] = useState([]);
+  useEffect(() => {
+    setInstruments(instrumentData);
+  }, []);
 
   const colorMap = ["text-teal-500", "text-green-600", "text-purple-600", "text-orange-600"];
 
   // Houses the entire song with all tracks
   // TODO: resizing from changing numSegments and time signature
-  const [song, setSong] = useState(() =>
-    Array.from({ length: numTracks }, () =>
-      Array.from({ length: maxNumSegments }, () =>
-        Array.from({ length: notes.length }, () =>
-          Array(numSteps).fill(null)
+  const [song, setSong] = useState([]);
+
+  useEffect(() => {
+    if (instruments.length > 0) {
+      const initialSong = instruments.map(instrument =>
+        Array.from({ length: maxNumSegments }, () =>
+          Array.from({ length: instrument.numNotes }, () =>
+            Array(numSteps).fill(null)
+          )
         )
-      )
-    )
-  );
+      );
+      setSong(initialSong);
+    }
+  }, [instruments, maxNumSegments, numSteps]);
 
   // the current grid being shown to the user
   // Track is one of the four instruments
   // Segment is one of the grids
   const [trackSegment, setTrackSegment] = useState({ "track": 0, "segment": 0 });
+
 
   // Length of note that will be placed when clicked
   // Uses tone.js notation
@@ -99,7 +107,7 @@ function Composer() {
     if (sameSeg) {
       newGrid = song[sameSeg.track][sameSeg.segment].map(row => [...row]);
     } else {
-      newGrid = Array.from({ length: notes.length }, () =>
+      newGrid = Array.from({ length: instruments[sameSeg.track] }, () =>
         Array(numSteps).fill(null)
       );
     }
@@ -118,6 +126,14 @@ function Composer() {
     setSong(newSong);
   };
 
+  if (song.length === 0 || !song[trackSegment.track]) {
+    return (
+      <div className="relative bg-neutral-800 text-amber-100 min-h-screen px-6 font-mono">
+        <p className="text-center text-xl">Loading song data...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="relative bg-neutral-800 text-amber-100 min-h-screen px-6 font-mono">
       <div>
@@ -129,10 +145,10 @@ function Composer() {
       <div className="flex justify-center border border-amber-100 py-2">
 
         {/* grid */}
-        <Grid grid={song[trackSegment.track][trackSegment.segment]} setGrid={setGrid} numSteps={numSteps} notes={notes} noteLength={noteLength} trackSegment={trackSegment} state={segmentStates[trackSegment.track][trackSegment.segment]} />
+        <Grid grid={song[trackSegment.track][trackSegment.segment]} setGrid={setGrid} numSteps={numSteps} instruments={instruments} noteLength={noteLength} trackSegment={trackSegment} state={segmentStates[trackSegment.track][trackSegment.segment]} />
 
         {/* Options */}
-        <Options noteLength={noteLength} setNoteLength={setNoteLength} song={song} segmentStates={segmentStates} />
+        <Options noteLength={noteLength} setNoteLength={setNoteLength} song={song} segmentStates={segmentStates} instruments={instruments} />
       </div>
       {/* Track control */}
       <div>

@@ -2,7 +2,7 @@ import * as Tone from "tone";
 import { useState, useEffect, useRef } from "react";
 
 // Holds the music play button and music playback logic
-function MusicPlay({ song, segmentStates, onStepChange, onSegmentChange }) {
+function MusicPlay({ song, segmentStates, onStepChange, onSegmentChange, instruments }) {
   // num cells to tone.js notation
   const lengthMap = {
     1: "16n",
@@ -35,23 +35,23 @@ function MusicPlay({ song, segmentStates, onStepChange, onSegmentChange }) {
 
   // Initialize synths once and keep them
   useEffect(() => {
-    // Create synths only once
-    synthsRef.current = [
-      new Tone.PolySynth(Tone.Synth).toDestination(),
-      new Tone.PolySynth(Tone.Synth).toDestination(),
-      new Tone.PolySynth(Tone.Synth).toDestination(),
-      new Tone.PolySynth(Tone.Synth).toDestination(),
-    ];
+    if (synthsRef.current.length === 0) {
+      synthsRef.current = instruments
+        .filter(inst => inst.name !== "Drums") // skip the drums object
+        .map(inst => {
+          const VoiceClass = Tone[inst.synth];   // e.g., Synth, FMSynth, etc.
+          const PolyClass = Tone[inst.type];     // usually PolySynth
 
-    // Clean up synths on unmount
+          return new PolyClass(VoiceClass, inst.options).toDestination();
+        });
+    }
+
     return () => {
-      synthsRef.current.forEach(synth => {
-        synth.dispose();
-      });
+      synthsRef.current.forEach(synth => synth.dispose());
+      synthsRef.current = [];
     };
-  }, []); // Empty dependency array - only run once
+  }, []);  // Set up transport and sequence
 
-  // Set up transport and sequence
   useEffect(() => {
     // Clean up previous sequence
     if (sequenceRef.current) {

@@ -1,6 +1,7 @@
+import { useMemo, useState, useEffect } from "react";
 import * as Tone from "tone";
 
-function Grid({ grid, setGrid, numSteps, notes, noteLength, trackSegment, state }) {
+function Grid({ grid, setGrid, numSteps, instruments, noteLength, trackSegment, state }) {
   // converts tone.js notation to number of cells in grid
   // e.g. 16n = 1 cell, 2n = 8 cells
   const lengthToCells = (length = noteLength) => {
@@ -17,7 +18,23 @@ function Grid({ grid, setGrid, numSteps, notes, noteLength, trackSegment, state 
 
   const colorMap = ["bg-teal-500", "bg-green-600", "bg-purple-600", "bg-orange-600"];
 
-  const synth = new Tone.Synth().toDestination();
+  const { synth, notes } = useMemo(() => {
+    let instrument = instruments[trackSegment.track];
+    if (instrument.name === "Drums") instrument = instrument.kick;
+    const InnerSynthClass = Tone[instrument.synth];
+    const synthInstance = new Tone[instrument.type](InnerSynthClass, instrument.options).toDestination();
+    synthInstance.maxPolyphony = instrument.numNotes;
+    return {
+      synth: synthInstance,
+      notes: instrument.noteRange,
+    };
+  }, [instruments, trackSegment.track]);
+
+  useEffect(() => {
+    return () => {
+      synth.dispose();
+    };
+  }, [synth]);
 
   // add note to grid
   const addNote = (row, col) => {

@@ -59,9 +59,6 @@ ${(openDropdown === "noteLength" ? "visible" : "invisible")}`}>
         </div>
       </div>
 
-      {/* Note effects */}
-      <div className="relative border border-amber-100 w-50 my-1 px-2">Note Effects</div>
-
       {/* Key */}
       <div className="relative border border-amber-100 w-50 my-1 px-2">Key:</div>
 

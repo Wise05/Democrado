@@ -19,10 +19,7 @@ function Composer() {
   // number of steps in grid. 64 means 4 bars with 16 steps (16th notes)
   const [numSteps, setNumSteps] = useState(64);
 
-  const [instruments, setInstruments] = useState([]);
-  useEffect(() => {
-    setInstruments(instrumentData);
-  }, []);
+  const [instruments, setInstruments] = useState(instrumentData);
 
   const colorMap = ["text-teal-500", "text-green-600", "text-purple-600", "text-orange-600"];
 
@@ -124,6 +121,11 @@ function Composer() {
     // Final: set both states
     setSegmentStates(newSegStates);
     setSong(newSong);
+  };
+
+  const handleStartAudio = async () => {
+    await Tone.start();
+    console.log("Audio context started");
   };
 
   if (song.length === 0 || !song[trackSegment.track]) {

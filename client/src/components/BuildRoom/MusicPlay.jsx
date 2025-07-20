@@ -21,6 +21,10 @@ function MusicPlay({ song, segmentStates, onStepChange, onSegmentChange, instrum
   const songRef = useRef(song);
   const segmentStatesRef = useRef(segmentStates);
   const synthsRef = useRef([]);
+  const kickRef = useRef(null);
+  const snareRef = useRef(null);
+  const hihatRef = useRef(null);
+
   const sequenceRef = useRef(null);
 
   // Keep songRef current
@@ -33,25 +37,35 @@ function MusicPlay({ song, segmentStates, onStepChange, onSegmentChange, instrum
     segmentStatesRef.current = segmentStates;
   }, [segmentStates]);
 
-  // Initialize synths once and keep them
+  // Initialize synths 
   useEffect(() => {
     if (synthsRef.current.length === 0) {
-      synthsRef.current = instruments
-        .filter(inst => inst.name !== "Drums") // skip the drums object
-        .map(inst => {
-          const VoiceClass = Tone[inst.synth];   // e.g., Synth, FMSynth, etc.
-          const PolyClass = Tone[inst.type];     // usually PolySynth
-
-          return new PolyClass(VoiceClass, inst.options).toDestination();
-        });
+      instruments.forEach((inst) => {
+        if (inst.name === "Drums") {
+          // Create drum synths
+          if (inst.kick) kickRef.current = new Tone[inst.kick.type](Tone[inst.kick.synth], inst.kick.options).toDestination();
+          if (inst.snare) snareRef.current = new Tone.Sampler(inst.snare.options).toDestination();
+          if (inst.hihat) hihatRef.current = new Tone.Sampler(inst.hihat.options).toDestination();
+        } else {
+          const VoiceClass = Tone[inst.synth];
+          const PolyClass = Tone[inst.type];
+          const synth = new PolyClass(VoiceClass, inst.options).toDestination();
+          synthsRef.current.push(synth);
+        }
+      });
     }
 
     return () => {
-      synthsRef.current.forEach(synth => synth.dispose());
+      synthsRef.current.forEach(s => s.dispose());
+      if (kickRef.current) kickRef.current.dispose();
+      if (snareRef.current) snareRef.current.dispose();
+      if (hihatRef.current) hihatRef.current.dispose();
       synthsRef.current = [];
+      kickRef.current = null;
+      snareRef.current = null;
+      hihatRef.current = null;
     };
-  }, []);  // Set up transport and sequence
-
+  }, []);
   useEffect(() => {
     // Clean up previous sequence
     if (sequenceRef.current) {
@@ -93,17 +107,27 @@ function MusicPlay({ song, segmentStates, onStepChange, onSegmentChange, instrum
 
       // Play notes for each track simultaneously
       for (let track = 0; track < currentSong.length; track++) {
-        // Check if this segment exists for this track
         if (segmentIndex >= currentSong[track].length) continue;
 
         const segment = currentSong[track][segmentIndex];
 
         for (let row = 0; row < segment.length; row++) {
           const cell = segment[row][stepInSegment];
-          if (cell && synthsRef.current[track]) {
+          if (cell) {
             const duration = lengthMap[cell.length] || "16n";
-            // Use the persistent synths
-            synthsRef.current[track].triggerAttackRelease(cell.note, duration, time);
+
+            if (instruments[track].name === "Drums") {
+              if (row === 0 && snareRef.current?.loaded) {
+                snareRef.current.triggerAttackRelease("C2", duration, time);
+              } else if (row === 1 && hihatRef.current?.loaded) {
+                hihatRef.current.triggerAttackRelease("C2", duration, time);
+              } else if (kickRef.current) {
+                kickRef.current.triggerAttackRelease("C2", duration, time);
+              }
+            } else {
+              const synth = synthsRef.current[track];
+              if (synth) synth.triggerAttackRelease(cell.note, duration, time);
+            }
           }
         }
       }

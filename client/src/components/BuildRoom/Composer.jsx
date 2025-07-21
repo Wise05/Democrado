@@ -88,15 +88,12 @@ function Composer() {
 
     // Step 2: look for matching segment in the updated state
     let sameSeg = null;
-    for (let i = 0; i < numTracks; i++) {
-      for (let j = 0; j < maxNumSegments; j++) {
-        if (i === trackIndex && j === segmentIndex) continue;
-        if (newSegStates[i][j] === targetValue) {
-          sameSeg = { track: i, segment: j };
-          break;
-        }
+    for (let j = 0; j < maxNumSegments; j++) {
+      if (j === segmentIndex) continue;
+      if (newSegStates[trackIndex][j] === targetValue) {
+        sameSeg = { "track": trackIndex, "segment": j };
+        break;
       }
-      if (sameSeg) break;
     }
 
     // Step 3: determine the new grid to use
@@ -104,7 +101,7 @@ function Composer() {
     if (sameSeg) {
       newGrid = song[sameSeg.track][sameSeg.segment].map(row => [...row]);
     } else {
-      newGrid = Array.from({ length: instruments[sameSeg.track] }, () =>
+      newGrid = Array.from({ length: instruments[trackIndex].numNotes }, () =>
         Array(numSteps).fill(null)
       );
     }

@@ -2,7 +2,7 @@ import * as Tone from "tone";
 import { useState, useEffect, useRef } from "react";
 
 // Holds the music play button and music playback logic
-function MusicPlay({ song, segmentStates, onStepChange, onSegmentChange, instruments }) {
+function MusicPlay({ song, segmentStates, onStepChange, onSegmentChange, instruments, beginning, setBeginning }) {
   // num cells to tone.js notation
   const lengthMap = {
     1: "16n",
@@ -156,8 +156,11 @@ function MusicPlay({ song, segmentStates, onStepChange, onSegmentChange, instrum
         sequenceRef.current.stop();
       }
       // Reset position
-      setCurrentStep(0);
-      setCurrentSegment(0);
+      if (beginning === true) {
+        setCurrentStep(0);
+        setCurrentSegment(0);
+        setBeginning(false);
+      }
     }
     setPlaying(!playing);
   };

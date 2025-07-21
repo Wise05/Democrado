@@ -5,6 +5,7 @@ import PlayButton from "./MusicPlay";
 function Options({ song, noteLength, setNoteLength, segmentStates, instruments }) {
   const noteLengths = { "whole note": "1n", "half note": "2n", "quarter note": "4n", "eigth note": "8n", "sixteenth note": "16n" };
 
+  const [beginning, setBeginning] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
 
   return (
@@ -12,17 +13,16 @@ function Options({ song, noteLength, setNoteLength, segmentStates, instruments }
       <div className="flex gap-1">
 
         {/* play */}
-        <PlayButton song={song} segmentStates={segmentStates} instruments={instruments} />
-        <button className="px-2 border border-amber-100">
-          {/* prev */}
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
-            <path d="M9.195 18.44c1.25.714 2.805-.189 2.805-1.629v-2.34l6.945 3.968c1.25.715 2.805-.188 2.805-1.628V8.69c0-1.44-1.555-2.343-2.805-1.628L12 11.029v-2.34c0-1.44-1.555-2.343-2.805-1.628l-7.108 4.061c-1.26.72-1.26 2.536 0 3.256l7.108 4.061Z" />
-          </svg>
-        </button>
-        {/* next */}
-        <button className="px-2 border border-amber-100">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
-            <path d="M5.055 7.06C3.805 6.347 2.25 7.25 2.25 8.69v8.122c0 1.44 1.555 2.343 2.805 1.628L12 14.471v2.34c0 1.44 1.555 2.343 2.805 1.628l7.108-4.061c1.26-.72 1.26-2.536 0-3.256l-7.108-4.061C13.555 6.346 12 7.249 12 8.689v2.34L5.055 7.061Z" />
+        <PlayButton song={song} segmentStates={segmentStates} instruments={instruments} beginning={beginning} setBeginning={setBeginning} />
+
+        {/* beginning */}
+        <button
+          className="px-2 border border-amber-100"
+          onClick={() => { setBeginning(true); }}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="5" width="2" height="14" fill="white" />
+            <path d="M7 12L17 5V19L7 12Z" fill="white" />
           </svg>
         </button>
       </div>

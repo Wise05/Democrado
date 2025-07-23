@@ -1,10 +1,14 @@
 import { useMemo, useRef, useEffect } from "react";
 import * as Tone from "tone";
+import majorData from "./majorScales.json";
+import minorData from "./minorScales.json";
 
-function Grid({ grid, setGrid, numSteps, instruments, noteLength, trackSegment, state }) {
+function Grid({ grid, setGrid, numSteps, instruments, noteLength, trackSegment, state, scale }) {
   const synthRef = useRef(null);
   const snareRef = useRef(null);
   const hihatRef = useRef(null);
+
+  const scales = majorData.concat(minorData);
 
   const lengthToCells = (length = noteLength) => {
     const num = length.match(/\d+/)[0];
@@ -18,7 +22,7 @@ function Grid({ grid, setGrid, numSteps, instruments, noteLength, trackSegment, 
     return map[num];
   };
 
-  const colorMap = ["bg-teal-500", "bg-green-600", "bg-purple-600", "bg-orange-600"];
+  const colorMap = ["bg-teal-400", "bg-sky-700", "bg-purple-600", "bg-orange-600"];
 
   const disposeSynths = () => {
     [synthRef, snareRef, hihatRef].forEach(ref => {
@@ -166,6 +170,20 @@ function Grid({ grid, setGrid, numSteps, instruments, noteLength, trackSegment, 
     return size + measureGaps * measureGapSize + noteGaps * noteGapSize;
   };
 
+
+  const containedInScale = (note) => {
+    let scaleNotes;
+    for (let i = 0; i < scales.length; i++) {
+      if (scales[i].scaleName == scale) {
+        scaleNotes = scales[i].notes;
+      }
+    }
+
+    const noteName = note.replace(/\d+$/, '');
+
+    return scaleNotes.includes(noteName);
+  }
+
   return (
     <>
       <div>
@@ -192,9 +210,10 @@ function Grid({ grid, setGrid, numSteps, instruments, noteLength, trackSegment, 
                       : removeNote(rowIndex, colIndex);
                   }}
                   className={`
-                    absolute left-0 w-full h-full cursor-pointer hover:border-3 hover:border-green-600 hover:z-2
+                    absolute left-0 w-full h-full cursor-pointer hover:border hover:border-amber-100 hover:z-2
                     ${cell ? `origin-left z-3` : ""}
-                    ${cell ? colorMap[trackSegment.track] : "bg-neutral-700"}
+                    ${cell ? colorMap[trackSegment.track] : ""}
+                    ${containedInScale(notes[rowIndex]) ? "bg-neutral-700" : "bg-neutral-800"}
                   `}
                   style={cell ? { transform: `scaleX(${calcScaleValue(colIndex, cell.length)})` } : {}}
                 />

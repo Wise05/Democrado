@@ -29,7 +29,7 @@ function TrackControl({ numSegments, colorMap, trackSegment, setTrackSegment, se
               className={`h-7 w-10 relative flex justify-center items-center group
                 ${colorMap[trackIndex]}
                 ${(trackSegment.track === trackIndex && trackSegment.segment === segmentIndex)
-                  ? "bg-neutral-600"
+                  ? "bg-neutral-600 border border-amber-100"
                   : (segmentStates[trackIndex][segmentIndex] === 0 ? "bg-neutral-800" : "bg-neutral-700")
                 }`}
               key={segmentIndex}>

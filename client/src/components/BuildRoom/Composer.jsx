@@ -19,9 +19,9 @@ function Composer() {
   // number of steps in grid. 64 means 4 bars with 16 steps (16th notes)
   const [numSteps, setNumSteps] = useState(64);
 
-  const [instruments, setInstruments] = useState(instrumentData);
+  const instruments = instrumentData;
 
-  const colorMap = ["text-teal-500", "text-green-600", "text-purple-600", "text-orange-600"];
+  const colorMap = ["text-teal-400", "text-sky-700", "text-purple-600", "text-orange-600"];
 
   // Houses the entire song with all tracks
   // TODO: resizing from changing numSegments and time signature
@@ -58,6 +58,8 @@ function Composer() {
       Array(maxNumSegments).fill(0)
     )
   );
+
+  const [scale, setScale] = useState("C Major");
 
   // Takes one grid and applies it to the whole song structure
   // Also populates to segments that are the same
@@ -144,10 +146,10 @@ function Composer() {
       <div className="flex justify-center border border-amber-100 py-2">
 
         {/* grid */}
-        <Grid grid={song[trackSegment.track][trackSegment.segment]} setGrid={setGrid} numSteps={numSteps} instruments={instruments} noteLength={noteLength} trackSegment={trackSegment} state={segmentStates[trackSegment.track][trackSegment.segment]} />
+        <Grid grid={song[trackSegment.track][trackSegment.segment]} setGrid={setGrid} numSteps={numSteps} instruments={instruments} noteLength={noteLength} trackSegment={trackSegment} state={segmentStates[trackSegment.track][trackSegment.segment]} scale={scale} />
 
         {/* Options */}
-        <Options noteLength={noteLength} setNoteLength={setNoteLength} song={song} segmentStates={segmentStates} instruments={instruments} />
+        <Options noteLength={noteLength} setNoteLength={setNoteLength} song={song} segmentStates={segmentStates} instruments={instruments} scale={scale} setScale={setScale} />
       </div>
       {/* Track control */}
       <div>

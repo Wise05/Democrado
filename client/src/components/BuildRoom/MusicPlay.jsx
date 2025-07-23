@@ -2,7 +2,7 @@ import * as Tone from "tone";
 import { useState, useEffect, useRef } from "react";
 
 // Holds the music play button and music playback logic
-function MusicPlay({ song, segmentStates, onStepChange, onSegmentChange, instruments, beginning, setBeginning }) {
+function MusicPlay({ song, segmentStates, instruments, beginning, setBeginning, tempo }) {
   // num cells to tone.js notation
   const lengthMap = {
     1: "16n",
@@ -32,7 +32,7 @@ function MusicPlay({ song, segmentStates, onStepChange, onSegmentChange, instrum
     songRef.current = song;
   }, [song]);
 
-  // Keep segment current
+  // Keep segmentStates current
   useEffect(() => {
     segmentStatesRef.current = segmentStates;
   }, [segmentStates]);
@@ -66,6 +66,8 @@ function MusicPlay({ song, segmentStates, onStepChange, onSegmentChange, instrum
       hihatRef.current = null;
     };
   }, []);
+
+  // make the sequence
   useEffect(() => {
     // Clean up previous sequence
     if (sequenceRef.current) {
@@ -73,7 +75,7 @@ function MusicPlay({ song, segmentStates, onStepChange, onSegmentChange, instrum
       sequenceRef.current = null;
     }
 
-    Tone.Transport.bpm.value = 120;
+    Tone.Transport.bpm.value = tempo;
 
     // Calculate total steps across all segments
     const getNumSegments = () => {
@@ -82,7 +84,7 @@ function MusicPlay({ song, segmentStates, onStepChange, onSegmentChange, instrum
 
     const getTotalSteps = () => {
       const numSegments = getNumSegments();
-      const stepsPerSegment = songRef.current?.[0]?.[0]?.[0]?.length || 64;
+      const stepsPerSegment = songRef.current[0][0][0].length || 64;
       return numSegments * stepsPerSegment;
     };
 
@@ -90,7 +92,7 @@ function MusicPlay({ song, segmentStates, onStepChange, onSegmentChange, instrum
     sequenceRef.current = new Tone.Sequence((time, step) => {
       setCurrentStep(step);
 
-      const stepsPerSegment = songRef.current?.[0]?.[0]?.[0]?.length || 64;
+      const stepsPerSegment = songRef.current[0][0][0].length || 64;
       const numSegments = getNumSegments();
 
       // Calculate current segment and step within segment
@@ -100,8 +102,7 @@ function MusicPlay({ song, segmentStates, onStepChange, onSegmentChange, instrum
       setCurrentSegment(segmentIndex);
 
       // Notify parent components of step and segment changes
-      if (onStepChange) onStepChange(stepInSegment);
-      if (onSegmentChange) onSegmentChange(segmentIndex);
+      // TODO:
 
       const currentSong = songRef.current;
 
@@ -139,7 +140,7 @@ function MusicPlay({ song, segmentStates, onStepChange, onSegmentChange, instrum
         sequenceRef.current.dispose();
       }
     };
-  }, [song, segmentStates, onStepChange, onSegmentChange]);
+  }, [tempo]);
 
   // play or pause music
   const handleClick = async () => {

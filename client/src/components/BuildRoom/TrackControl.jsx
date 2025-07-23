@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 
 function TrackControl({ numSegments, colorMap, trackSegment, setTrackSegment, segmentStates, setSegmentStates, handleSegmentChange }) {
 
@@ -23,18 +23,18 @@ function TrackControl({ numSegments, colorMap, trackSegment, setTrackSegment, se
     <div className="px-2 py-1 mt-3 border border-amber-100">
       {segmentStates.map((track, trackIndex) => (
         <div key={trackIndex} className="flex my-0.5 gap-0.5 font-pixel">
-          {/* {console.log(trackSegment)} */}
           {track.map((segment, segmentIndex) =>
             <div
               onClick={() => { handleSwitchSegment(trackIndex, segmentIndex) }}
-              className={`h-7 w-10 relative flex justify-center items-center
+              className={`h-7 w-10 relative flex justify-center items-center group
                 ${colorMap[trackIndex]}
-                ${(trackSegment["track"] == trackIndex && trackSegment["segment"] == segmentIndex) ?
-                  "bg-neutral-600" : "bg-neutral-700"}
-              `}
+                ${(trackSegment.track === trackIndex && trackSegment.segment === segmentIndex)
+                  ? "bg-neutral-600"
+                  : (segmentStates[trackIndex][segmentIndex] === 0 ? "bg-neutral-800" : "bg-neutral-700")
+                }`}
               key={segmentIndex}>
               {segment}
-              <div>
+              <div className="invisible group-hover:visible">
                 <button
                   onClick={() => { handleSegmentChange(trackIndex, segmentIndex, 1); }}
                   className="absolute right-0 top-0 hover:bg-neutral-500">

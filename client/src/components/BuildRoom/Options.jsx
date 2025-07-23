@@ -7,13 +7,14 @@ function Options({ song, noteLength, setNoteLength, segmentStates, instruments }
 
   const [beginning, setBeginning] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [tempo, setTempo] = useState(120);
 
   return (
     <div className="ml-2">
       <div className="flex gap-1">
 
         {/* play */}
-        <PlayButton song={song} segmentStates={segmentStates} instruments={instruments} beginning={beginning} setBeginning={setBeginning} />
+        <PlayButton song={song} segmentStates={segmentStates} instruments={instruments} beginning={beginning} setBeginning={setBeginning} tempo={tempo} />
 
         {/* beginning */}
         <button
@@ -63,7 +64,15 @@ ${(openDropdown === "noteLength" ? "visible" : "invisible")}`}>
       <div className="relative border border-amber-100 w-50 my-1 px-2">Key:</div>
 
       {/* Tempo */}
-      <div className="relative border border-amber-100 w-50 my-1 px-2">Tempo:</div>
+      <div className="flex border border-amber-100 w-50 my-1 px-2">
+        <p>Tempo:</p>
+        <input
+          value={tempo}
+          onChange={e => { setTempo(e.target.value) }}
+          className="w-full appearance-none bg-transparent border-none outline-none p-0 mx-2"
+          type="text"
+          placeholder={tempo} />
+      </div>
 
 
       <div className="relative border border-amber-100 w-50 my-1 px-2">Instrument:</div>

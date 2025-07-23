@@ -106,6 +106,7 @@ function Grid({ grid, setGrid, numSteps, instruments, noteLength, trackSegment, 
   };
 
   const addNote = async (row, col) => {
+    await Tone.start();
     if (state === 0) return;
 
     const numCells = lengthToCells(noteLength);

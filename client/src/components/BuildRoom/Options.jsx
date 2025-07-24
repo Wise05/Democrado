@@ -11,6 +11,7 @@ function Options({ song, noteLength, setNoteLength, segmentStates, instruments, 
   const [openDropdown, setOpenDropdown] = useState(null);
   const [majorMinor, setMajorMinor] = useState(null);
   const [tempo, setTempo] = useState(120);
+  const [volume, setVolume] = useState(0);
 
   const majorScales = majorData;
   const minorScales = minorData;
@@ -20,7 +21,7 @@ function Options({ song, noteLength, setNoteLength, segmentStates, instruments, 
       <div className="flex gap-1">
 
         {/* play */}
-        <PlayButton song={song} segmentStates={segmentStates} instruments={instruments} beginning={beginning} setBeginning={setBeginning} tempo={tempo} />
+        <PlayButton song={song} segmentStates={segmentStates} instruments={instruments} beginning={beginning} setBeginning={setBeginning} tempo={tempo} volume={volume} />
 
         {/* beginning */}
         <button
@@ -35,7 +36,33 @@ function Options({ song, noteLength, setNoteLength, segmentStates, instruments, 
       </div>
 
       {/* Volume */}
-      <div className="relative border border-amber-100 w-50 my-1 px-2">Volume:</div>
+      <div className="flex items-center py-0.5 border border-amber-100 w-50 my-1 px-2">
+        {volume === -10 ?
+          (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
+              <path d="M10.047 3.062a.75.75 0 0 1 .453.688v12.5a.75.75 0 0 1-1.264.546L5.203 13H2.667a.75.75 0 0 1-.7-.48A6.985 6.985 0 0 1 1.5 10c0-.887.165-1.737.468-2.52a.75.75 0 0 1 .7-.48h2.535l4.033-3.796a.75.75 0 0 1 .811-.142ZM13.78 7.22a.75.75 0 1 0-1.06 1.06L14.44 10l-1.72 1.72a.75.75 0 0 0 1.06 1.06l1.72-1.72 1.72 1.72a.75.75 0 1 0 1.06-1.06L16.56 10l1.72-1.72a.75.75 0 0 0-1.06-1.06L15.5 8.94l-1.72-1.72Z" />
+            </svg>
+          ) :
+          (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
+              <path d="M10.5 3.75a.75.75 0 0 0-1.264-.546L5.203 7H2.667a.75.75 0 0 0-.7.48A6.985 6.985 0 0 0 1.5 10c0 .887.165 1.737.468 2.52.111.29.39.48.7.48h2.535l4.033 3.796a.75.75 0 0 0 1.264-.546V3.75ZM16.45 5.05a.75.75 0 0 0-1.06 1.061 5.5 5.5 0 0 1 0 7.778.75.75 0 0 0 1.06 1.06 7 7 0 0 0 0-9.899Z" />
+              <path d="M14.329 7.172a.75.75 0 0 0-1.061 1.06 2.5 2.5 0 0 1 0 3.536.75.75 0 0 0 1.06 1.06 4 4 0 0 0 0-5.656Z" />
+            </svg>
+          )
+        }
+        <input
+          type="range"
+          min="-10"
+          max="10"
+          value={volume}
+          onChange={e => {
+            const newVolume = Number(e.target.value);
+            setVolume(newVolume);
+          }}
+          className="w-full h-1 ml-1 bg-amber-100 appearance-none cursor-pointer range-thumb-netural"
+        />
+
+      </div>
 
       {/* note length */}
       <div className="relative border border-amber-100 w-50 my-1 px-2">

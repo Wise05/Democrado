@@ -2,7 +2,7 @@ import * as Tone from "tone";
 import { useState, useEffect, useRef } from "react";
 
 // Holds the music play button and music playback logic
-function MusicPlay({ song, segmentStates, instruments, beginning, setBeginning, tempo }) {
+function MusicPlay({ song, segmentStates, instruments, beginning, setBeginning, tempo, volume }) {
   // num cells to tone.js notation
   const lengthMap = {
     1: "16n",
@@ -24,8 +24,8 @@ function MusicPlay({ song, segmentStates, instruments, beginning, setBeginning, 
   const kickRef = useRef(null);
   const snareRef = useRef(null);
   const hihatRef = useRef(null);
-
   const sequenceRef = useRef(null);
+  const pausePositionRef = useRef(0); // New ref to store pause position
 
   // Keep songRef current
   useEffect(() => {
@@ -42,7 +42,6 @@ function MusicPlay({ song, segmentStates, instruments, beginning, setBeginning, 
     if (synthsRef.current.length === 0) {
       instruments.forEach((inst) => {
         if (inst.name === "Drums") {
-          // Create drum synths
           if (inst.kick) kickRef.current = new Tone[inst.kick.type](Tone[inst.kick.synth], inst.kick.options).toDestination();
           if (inst.snare) snareRef.current = new Tone.Sampler(inst.snare.options).toDestination();
           if (inst.hihat) hihatRef.current = new Tone.Sampler(inst.hihat.options).toDestination();
@@ -67,9 +66,39 @@ function MusicPlay({ song, segmentStates, instruments, beginning, setBeginning, 
     };
   }, []);
 
+  useEffect(() => {
+    const applyVolume = () => {
+      if (typeof volume === 'number') {
+        Tone.Destination.volume.value = volume;
+        if (volume === -10) {
+          Tone.Destination.mute = true;
+        } else {
+          Tone.Destination.mute = false;
+        }
+      } else {
+        console.warn('Volume prop is not a number:', volume);
+      }
+    };
+
+    if (Tone.context.state === 'running' || Tone.context.state === 'suspended') {
+      applyVolume();
+    } else {
+      const handleContextStateChange = () => {
+        if (Tone.context.state === 'running' || Tone.context.state === 'suspended') {
+          applyVolume();
+          Tone.context.removeListener('statechange', handleContextStateChange);
+        }
+      };
+      Tone.context.on('statechange', handleContextStateChange);
+
+      return () => {
+        Tone.context.removeListener('statechange', handleContextStateChange);
+      };
+    }
+  }, [volume]);
+
   // make the sequence
   useEffect(() => {
-    // Clean up previous sequence
     if (sequenceRef.current) {
       sequenceRef.current.dispose();
       sequenceRef.current = null;
@@ -77,7 +106,6 @@ function MusicPlay({ song, segmentStates, instruments, beginning, setBeginning, 
 
     Tone.Transport.bpm.value = tempo;
 
-    // Calculate total steps across all segments
     const getNumSegments = () => {
       return Math.max(...segmentStatesRef.current.map(trackStates => trackStates.length));
     };
@@ -88,25 +116,19 @@ function MusicPlay({ song, segmentStates, instruments, beginning, setBeginning, 
       return numSegments * stepsPerSegment;
     };
 
-    // Create sequence that plays all segments
     sequenceRef.current = new Tone.Sequence((time, step) => {
       setCurrentStep(step);
 
       const stepsPerSegment = songRef.current[0][0][0].length || 64;
       const numSegments = getNumSegments();
 
-      // Calculate current segment and step within segment
       const segmentIndex = Math.floor(step / stepsPerSegment) % numSegments;
       const stepInSegment = step % stepsPerSegment;
 
       setCurrentSegment(segmentIndex);
 
-      // Notify parent components of step and segment changes
-      // TODO:
-
       const currentSong = songRef.current;
 
-      // Play notes for each track simultaneously
       for (let track = 0; track < currentSong.length; track++) {
         if (segmentIndex >= currentSong[track].length) continue;
 
@@ -135,7 +157,6 @@ function MusicPlay({ song, segmentStates, instruments, beginning, setBeginning, 
     }, Array.from({ length: getTotalSteps() }, (_, i) => i), "16n");
 
     return () => {
-      // Clean up sequence when dependencies change
       if (sequenceRef.current) {
         sequenceRef.current.dispose();
       }
@@ -149,15 +170,24 @@ function MusicPlay({ song, segmentStates, instruments, beginning, setBeginning, 
     if (!playing) {
       Tone.Transport.start();
       if (sequenceRef.current) {
-        sequenceRef.current.start();
+        // Resume from the saved pause position or start from beginning if reset
+        const startStep = beginning ? 0 : pausePositionRef.current;
+        sequenceRef.current.start(0, startStep);
+        setCurrentStep(startStep);
+        setCurrentSegment(
+          Math.floor(startStep / (songRef.current[0][0][0].length || 64)) % 16 // num segs
+        );
       }
     } else {
+      // Save the current position before stopping
+      pausePositionRef.current = currentStep;
       Tone.Transport.stop();
       if (sequenceRef.current) {
         sequenceRef.current.stop();
       }
-      // Reset position
-      if (beginning === true) {
+      if (beginning) {
+        // Reset position only if beginning is true
+        pausePositionRef.current = 0;
         setCurrentStep(0);
         setCurrentSegment(0);
         setBeginning(false);

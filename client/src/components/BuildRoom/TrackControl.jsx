@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-function TrackControl({ numSegments, colorMap, trackSegment, setTrackSegment, segmentStates, setSegmentStates, handleSegmentChange }) {
+function TrackControl({ numSegments, colorMap, trackSegment, setTrackSegment, segmentStates, setSegmentStates, handleSegmentChange, currentSegment, playing }) {
 
   // On initial render and when the number of 
   // segments changes, populate those new segments with 1
@@ -18,6 +18,14 @@ function TrackControl({ numSegments, colorMap, trackSegment, setTrackSegment, se
   const handleSwitchSegment = (track, segment) => {
     setTrackSegment({ "track": track, "segment": segment })
   }
+
+  useEffect(() => {
+    if (trackSegment.segment != currentSegment) {
+      setTrackSegment(prev => {
+        return { "track": prev.track, "segment": currentSegment };
+      });
+    }
+  }, [currentSegment, playing]);
 
   return (
     <div className="px-2 py-1 mt-3 border border-amber-100">

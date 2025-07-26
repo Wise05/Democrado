@@ -3,10 +3,11 @@ import * as Tone from "tone";
 import majorData from "./majorScales.json";
 import minorData from "./minorScales.json";
 
-function Grid({ grid, setGrid, numSteps, instruments, noteLength, trackSegment, state, scale }) {
+function Grid({ grid, setGrid, numSteps, instruments, noteLength, trackSegment, state, scale, playing, currentStep, tempo }) {
   const synthRef = useRef(null);
   const snareRef = useRef(null);
   const hihatRef = useRef(null);
+  const playbackBarRef = useRef(null);
 
   const scales = majorData.concat(minorData);
 
@@ -84,6 +85,44 @@ function Grid({ grid, setGrid, numSteps, instruments, noteLength, trackSegment, 
     };
   }, [instruments, trackSegment.track]);
 
+  // Calculate playback bar position
+  const calculateBarPosition = () => {
+    const stepInCurrentGrid = currentStep % numSteps;
+    const cellWidth = 16; // w-4 = 1rem = 16px
+    const basePosition = stepInCurrentGrid * cellWidth;
+
+    // Add spacing for measure and beat gaps
+    let additionalSpacing = 0;
+    for (let i = 1; i <= stepInCurrentGrid; i++) {
+      if (i % 16 === 0) {
+        additionalSpacing += 4; // ml-1 = 0.25rem = 4px
+      } else if (i % 4 === 0) {
+        additionalSpacing += 2; // ml-0.5 = 0.125rem = 2px
+      }
+    }
+
+    return basePosition + additionalSpacing;
+  };
+
+  // Update playback bar position
+  useEffect(() => {
+    if (playbackBarRef.current && playing) {
+      const position = calculateBarPosition();
+      const duration = (60 / tempo / 4) * 1000; // Duration for one 16th note in ms
+
+      playbackBarRef.current.style.transition = `left ${duration}ms linear`;
+      playbackBarRef.current.style.left = `${position}px`;
+    }
+  }, [currentStep, tempo, playing, numSteps]);
+
+  // Reset bar position when playback stops
+  useEffect(() => {
+    if (!playing && playbackBarRef.current) {
+      playbackBarRef.current.style.transition = 'none';
+      playbackBarRef.current.style.left = '0px';
+    }
+  }, [playing]);
+
   const playDrumSound = (row) => {
     if (row === 0 && snareRef.current) {
       if (snareRef.current.loaded !== false) {
@@ -99,7 +138,6 @@ function Grid({ grid, setGrid, numSteps, instruments, noteLength, trackSegment, 
       console.error("Drum synth is not initialized");
     }
   };
-
 
   const playInstrumentSound = (row) => {
     if (synthRef.current) {
@@ -170,7 +208,6 @@ function Grid({ grid, setGrid, numSteps, instruments, noteLength, trackSegment, 
     return size + measureGaps * measureGapSize + noteGaps * noteGapSize;
   };
 
-
   const containedInScale = (note) => {
     let scaleNotes;
     for (let i = 0; i < scales.length; i++) {
@@ -193,34 +230,48 @@ function Grid({ grid, setGrid, numSteps, instruments, noteLength, trackSegment, 
           </div>
         ))}
       </div>
-      <div>
-        {grid.map((row, rowIndex) => (
-          <div key={rowIndex} className="flex my-0.5">
-            {row.map((cell, colIndex) => (
-              <div
-                key={colIndex}
-                className={`relative w-4 h-4 border-l-1 border-l-neutral-800
-                    ${colIndex % 4 === 0 ? "ml-0.5" : ""}
-                    ${colIndex % 16 === 0 ? "ml-1" : ""}`}
-              >
+      <div className="relative overflow-hidden">
+        {/* Playback Bar */}
+        <div
+          ref={playbackBarRef}
+          className={`absolute top-0 w-0.5 bg-red-500 z-10 opacity-80 shadow-lg ${playing ? "visible" : "invisible"}`}
+          style={{
+            height: `${notes.length * 20}px`, // 20px = h-4 + my-0.5
+            left: '0px',
+            transition: playing ? undefined : 'none'
+          }}
+        />
+
+        {/* Grid */}
+        <div>
+          {grid.map((row, rowIndex) => (
+            <div key={rowIndex} className="flex my-0.5">
+              {row.map((cell, colIndex) => (
                 <div
-                  onMouseDown={() => {
-                    cell == null
-                      ? addNote(rowIndex, colIndex)
-                      : removeNote(rowIndex, colIndex);
-                  }}
-                  className={`
-                    absolute left-0 w-full h-full cursor-pointer hover:border hover:border-amber-100 hover:z-2
-                    ${cell ? `origin-left z-3` : ""}
-                    ${cell ? colorMap[trackSegment.track] : ""}
-                    ${containedInScale(notes[rowIndex]) ? "bg-neutral-700" : "bg-neutral-800"}
-                  `}
-                  style={cell ? { transform: `scaleX(${calcScaleValue(colIndex, cell.length)})` } : {}}
-                />
-              </div>
-            ))}
-          </div>
-        ))}
+                  key={colIndex}
+                  className={`relative w-4 h-4 border-l-1 border-l-neutral-800
+                      ${colIndex % 4 === 0 ? "ml-0.5" : ""}
+                      ${colIndex % 16 === 0 ? "ml-1" : ""}`}
+                >
+                  <div
+                    onMouseDown={() => {
+                      cell == null
+                        ? addNote(rowIndex, colIndex)
+                        : removeNote(rowIndex, colIndex);
+                    }}
+                    className={`
+                      absolute left-0 w-full h-full cursor-pointer hover:border hover:border-amber-100 hover:z-2
+                      ${cell ? `origin-left z-3` : ""}
+                      ${cell ? colorMap[trackSegment.track] : ""}
+                      ${containedInScale(notes[rowIndex]) ? "bg-neutral-700" : "bg-neutral-800"}
+                    `}
+                    style={cell ? { transform: `scaleX(${calcScaleValue(colIndex, cell.length)})` } : {}}
+                  />
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
     </>
   );

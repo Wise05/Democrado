@@ -2,7 +2,7 @@ import * as Tone from "tone";
 import { useState, useEffect, useRef } from "react";
 
 // Holds the music play button and music playback logic
-function MusicPlay({ song, segmentStates, instruments, beginning, setBeginning, tempo, volume }) {
+function MusicPlay({ song, segmentStates, instruments, beginning, setBeginning, tempo, volume, currentStep, setCurrentStep, setCurrentSegment, playing, setPlaying }) {
   // num cells to tone.js notation
   const lengthMap = {
     1: "16n",
@@ -12,11 +12,6 @@ function MusicPlay({ song, segmentStates, instruments, beginning, setBeginning, 
     16: "1n"
   };
 
-  // tells whether the music is played or paused
-  const [playing, setPlaying] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [currentSegment, setCurrentSegment] = useState(0);
-
   // refs to keep current values
   const songRef = useRef(song);
   const segmentStatesRef = useRef(segmentStates);
@@ -25,7 +20,7 @@ function MusicPlay({ song, segmentStates, instruments, beginning, setBeginning, 
   const snareRef = useRef(null);
   const hihatRef = useRef(null);
   const sequenceRef = useRef(null);
-  const pausePositionRef = useRef(0); // New ref to store pause position
+  const pausePositionRef = useRef(0);
 
   // Keep songRef current
   useEffect(() => {
@@ -36,6 +31,26 @@ function MusicPlay({ song, segmentStates, instruments, beginning, setBeginning, 
   useEffect(() => {
     segmentStatesRef.current = segmentStates;
   }, [segmentStates]);
+
+  // Helper function to get active segments (segments with any value > 0 in segmentStates)
+  const getActiveSegments = () => {
+    const activeSegments = [];
+    const maxSegments = Math.max(...segmentStatesRef.current.map(trackStates => trackStates.length));
+
+    for (let segIndex = 0; segIndex < maxSegments; segIndex++) {
+      // Check if any track has a value > 0 for this segment
+      const hasActiveTrack = segmentStatesRef.current.some(trackStates =>
+        segIndex < trackStates.length && trackStates[segIndex] > 0
+      );
+
+      if (hasActiveTrack) {
+        activeSegments.push(segIndex);
+      }
+    }
+
+    // If no active segments, default to segment 0
+    return activeSegments.length > 0 ? activeSegments : [0];
+  };
 
   // Initialize synths 
   useEffect(() => {
@@ -70,7 +85,7 @@ function MusicPlay({ song, segmentStates, instruments, beginning, setBeginning, 
     const applyVolume = () => {
       if (typeof volume === 'number') {
         Tone.Destination.volume.value = volume;
-        if (volume === -10) {
+        if (volume === -20) {
           Tone.Destination.mute = true;
         } else {
           Tone.Destination.mute = false;
@@ -106,33 +121,38 @@ function MusicPlay({ song, segmentStates, instruments, beginning, setBeginning, 
 
     Tone.Transport.bpm.value = tempo;
 
-    const getNumSegments = () => {
-      return Math.max(...segmentStatesRef.current.map(trackStates => trackStates.length));
-    };
-
     const getTotalSteps = () => {
-      const numSegments = getNumSegments();
+      const activeSegments = getActiveSegments();
       const stepsPerSegment = songRef.current[0][0][0].length || 64;
-      return numSegments * stepsPerSegment;
+      return activeSegments.length * stepsPerSegment;
     };
 
     sequenceRef.current = new Tone.Sequence((time, step) => {
-      setCurrentStep(step);
-
+      const activeSegments = getActiveSegments();
       const stepsPerSegment = songRef.current[0][0][0].length || 64;
-      const numSegments = getNumSegments();
 
-      const segmentIndex = Math.floor(step / stepsPerSegment) % numSegments;
+      // Calculate which active segment we're in and the step within that segment
+      const activeSegmentIndex = Math.floor(step / stepsPerSegment) % activeSegments.length;
+      const actualSegmentIndex = activeSegments[activeSegmentIndex];
       const stepInSegment = step % stepsPerSegment;
 
-      setCurrentSegment(segmentIndex);
+      setCurrentStep(step);
+      setCurrentSegment(actualSegmentIndex);
 
       const currentSong = songRef.current;
 
+      // Only play tracks that have segmentStates > 0 for this segment
       for (let track = 0; track < currentSong.length; track++) {
-        if (segmentIndex >= currentSong[track].length) continue;
+        // Check if this track should be active for this segment
+        const trackStates = segmentStatesRef.current[track];
+        const shouldPlayTrack = trackStates &&
+          actualSegmentIndex < trackStates.length &&
+          trackStates[actualSegmentIndex] > 0;
 
-        const segment = currentSong[track][segmentIndex];
+        if (!shouldPlayTrack) continue;
+        if (actualSegmentIndex >= currentSong[track].length) continue;
+
+        const segment = currentSong[track][actualSegmentIndex];
 
         for (let row = 0; row < segment.length; row++) {
           const cell = segment[row][stepInSegment];
@@ -161,7 +181,7 @@ function MusicPlay({ song, segmentStates, instruments, beginning, setBeginning, 
         sequenceRef.current.dispose();
       }
     };
-  }, [tempo]);
+  }, [tempo, segmentStates]); // Added segmentStates as dependency
 
   // play or pause music
   const handleClick = async () => {
@@ -174,9 +194,13 @@ function MusicPlay({ song, segmentStates, instruments, beginning, setBeginning, 
         const startStep = beginning ? 0 : pausePositionRef.current;
         sequenceRef.current.start(0, startStep);
         setCurrentStep(startStep);
-        setCurrentSegment(
-          Math.floor(startStep / (songRef.current[0][0][0].length || 64)) % 16 // num segs
-        );
+
+        // Calculate the actual segment based on active segments
+        const activeSegments = getActiveSegments();
+        const stepsPerSegment = songRef.current[0][0][0].length || 64;
+        const activeSegmentIndex = Math.floor(startStep / stepsPerSegment) % activeSegments.length;
+        const actualSegmentIndex = activeSegments[activeSegmentIndex];
+        setCurrentSegment(actualSegmentIndex);
       }
     } else {
       // Save the current position before stopping
@@ -189,7 +213,8 @@ function MusicPlay({ song, segmentStates, instruments, beginning, setBeginning, 
         // Reset position only if beginning is true
         pausePositionRef.current = 0;
         setCurrentStep(0);
-        setCurrentSegment(0);
+        const activeSegments = getActiveSegments();
+        setCurrentSegment(activeSegments[0] || 0);
         setBeginning(false);
       }
     }

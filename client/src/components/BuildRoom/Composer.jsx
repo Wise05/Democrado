@@ -59,7 +59,15 @@ function Composer() {
     )
   );
 
+  // scale that will be highlighted in the grid
   const [scale, setScale] = useState("C Major");
+
+  const [tempo, setTempo] = useState(120);
+
+  // playing and position in the song used for playback and animation
+  const [playing, setPlaying] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [currentSegment, setCurrentSegment] = useState(0);
 
   // Takes one grid and applies it to the whole song structure
   // Also populates to segments that are the same
@@ -146,14 +154,14 @@ function Composer() {
       <div className="flex justify-center border border-amber-100 py-2">
 
         {/* grid */}
-        <Grid grid={song[trackSegment.track][trackSegment.segment]} setGrid={setGrid} numSteps={numSteps} instruments={instruments} noteLength={noteLength} trackSegment={trackSegment} state={segmentStates[trackSegment.track][trackSegment.segment]} scale={scale} />
+        <Grid grid={song[trackSegment.track][trackSegment.segment]} setGrid={setGrid} numSteps={numSteps} instruments={instruments} noteLength={noteLength} trackSegment={trackSegment} state={segmentStates[trackSegment.track][trackSegment.segment]} scale={scale} currentStep={currentStep} playing={playing} tempo={tempo} />
 
         {/* Options */}
-        <Options noteLength={noteLength} setNoteLength={setNoteLength} song={song} segmentStates={segmentStates} instruments={instruments} scale={scale} setScale={setScale} />
+        <Options noteLength={noteLength} setNoteLength={setNoteLength} song={song} segmentStates={segmentStates} instruments={instruments} scale={scale} setScale={setScale} currentStep={currentStep} setCurrentStep={setCurrentStep} setCurrentSegment={setCurrentSegment} playing={playing} setPlaying={setPlaying} tempo={tempo} setTempo={setTempo} />
       </div>
       {/* Track control */}
       <div>
-        <TrackControl numSegments={numSegments} colorMap={colorMap} trackSegment={trackSegment} setTrackSegment={setTrackSegment} segmentStates={segmentStates} setSegmentStates={setSegmentStates} handleSegmentChange={handleSegmentChange} />
+        <TrackControl numSegments={numSegments} colorMap={colorMap} trackSegment={trackSegment} setTrackSegment={setTrackSegment} segmentStates={segmentStates} setSegmentStates={setSegmentStates} handleSegmentChange={handleSegmentChange} currentSegment={currentSegment} playing={playing} />
       </div>
     </div >
   )

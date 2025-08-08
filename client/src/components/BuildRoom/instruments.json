@@ -77,9 +77,9 @@
         "octaves": 8,
         "oscillator": { "type": "sine" },
         "envelope": { 
-          "attack": 0.001, 
+          "attack": 0.1, 
           "decay": 0.3, 
-          "sustain": 0.05, 
+          "sustain": 0.001, 
           "release": 0.8 
         },
         "filterEnvelope": {
@@ -90,7 +90,7 @@
           "baseFrequency": 100,
           "octaves": 4
         },
-        "volume": -30
+        "volume": -70
       },
       "noteRange": [
         "Sn", "Hi", "B2", "A#2", "A2", "G#2", "G2", "F#2", "F2", "E2", "D#2", "D2", "C#2", "C2"

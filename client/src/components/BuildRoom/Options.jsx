@@ -172,9 +172,6 @@ ${(openDropdown === "noteLength" ? "visible" : "invisible")}`}>
           type="text"
           placeholder={tempo} />
       </div>
-
-
-      <div className="relative border border-amber-100 w-50 my-1 px-2">Instrument:</div>
     </div >
   )
 }

@@ -27,8 +27,9 @@ function Home() {
         </div>
 
         {/* Leaderboard wigit for popular songs created */}
-        <div className="border-amber-100 border-1 w-full h-43.5">
-          Shared work
+        <div className="border-amber-100 border-1 w-full h-43.5 flex items-center justify-center font-pixel text-3xl">
+          Shared work <br />
+          Work in progress
           {/* TODO: */}
           <RecentRuns />
         </div>
@@ -81,16 +82,16 @@ function Home() {
         </Link>
       </div>
 
-      {/* Games in session wigit to fill space I guess */}
+      {/* Lessons */}
       <div className="flex gap-4 justify-center">
         <div className="border-amber-100 border-1 w-full h-50 font-pixel text-3xl flex justify-center items-center no-underline">
-          Games in session
-          <ChartWigit />
+          Lessons <br />
+          Work in progress
         </div>
 
         {/* About TODO: */}
         <div>
-          <Link to="/" className="border-amber-100 mb-4 border-1 w-120 h-23 flex justify-center items-center overflow-hidden">
+          <Link to="/About" className="border-amber-100 mb-4 border-1 w-120 h-23 flex justify-center items-center overflow-hidden">
             <div className="w-full h-full font-pixel text-3xl flex jutify-center items-center transition delay-100 duration-200 ease-in-out hover:bg-red-600 hover:scale-110 relative group">
               <h2 className="mx-auto">About</h2>
               <img className="w-5 absolute left-35 invisible transition delay-100 duration-200 ease-in group-hover:visible group-hover:-translate-x-4" src={head} alt="head" />

@@ -7,6 +7,7 @@ import Podium from "./components/Results/Podium";
 import Login from "./components/Profile/Login";
 import Profile from "./components/Profile/Profile";
 import SignUp from "./components/Profile/SignUp";
+import About from "./components/HomePage/About";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path='/composer' element={<Composer />} />
         <Route path='/voting' element={<Voting />} />
         <Route path='/podium' element={<Podium />} />
+        <Route path="/about" element={<About />} />
       </Routes>
     </BrowserRouter>
   );
